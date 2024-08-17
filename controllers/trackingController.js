@@ -2,21 +2,23 @@ import Tracking from '../models/Tracking.js';
 
 // Function to save tracking data
 export const saveTrackingData = async (req, res) => {
-    const { employeeId, date, time, address } = req.body;
-
-    // Validate input data
-    if (!employeeId || !date || !time || !address) {
-        return res.status(400).json({ message: 'Missing required fields' });
-    }
-
     try {
-        // Optional: Check for existing record to avoid duplicates
-        const existingRecord = await Tracking.findOne({ employeeId, date, time });
-        if (existingRecord) {
-            return res.status(409).json({ message: 'Tracking data already recorded for this time' });
+        // Validate and structure the incoming data
+        const { employeeId, date, time, lat, lng, address } = req.body;
+
+        if (!employeeId || !date || !time || !lat || !lng || !address) {
+            return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        const trackingData = new Tracking({ employeeId, date, time, address });
+        const trackingData = new Tracking({
+            employeeId,
+            date,
+            time,
+            lat,
+            lng,
+            address
+        });
+
         await trackingData.save();
         res.status(200).json({ message: 'Tracking data recorded successfully' });
     } catch (err) {
@@ -29,7 +31,11 @@ export const getTrackingData = async (req, res) => {
     const { employeeId, date } = req.query;
 
     try {
-        const data = await Tracking.find({ employeeId, date });
+        const query = {};
+        if (employeeId) query.employeeId = employeeId;
+        if (date) query.date = date;
+
+        const data = await Tracking.find(query);
         res.status(200).json(data);
     } catch (err) {
         res.status(500).json({ message: 'Error fetching tracking data', error: err });
