@@ -1,4 +1,5 @@
 import express from 'express';
+import upload from '../multerConfig.js'; // Import multer configuration
 import {
     addEmployee,
     getAllEmployees,
@@ -6,16 +7,16 @@ import {
     verifyEmployeeEmail,
     getEmployeeByEmail,
     updateEmployee,
-    
 } from '../controllers/EmployeeController.js';
 
 const router = express.Router();
 
-router.post('/add', addEmployee);
+// Use multer middleware to handle file upload for addEmployee and updateEmployee routes
+router.post('/add', upload.single('photo'), addEmployee);
+router.put('/:id', upload.single('photo'), updateEmployee);
 router.get('/', getAllEmployees);
 router.get('/:id', getEmployeeById);
 router.get('/verify/:email', verifyEmployeeEmail);
 router.get('/email/:email', getEmployeeByEmail);
-router.put('/:id', updateEmployee);
 
 export default router;

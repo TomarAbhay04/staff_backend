@@ -1,16 +1,19 @@
 import express from 'express';
-import { recordAttendance, getAttendance } from '../controllers/attendanceController.js';
+import { uploadAttendance, getAttendanceByDateRange, checkAttendance, getAttendanceByMonthAndYear} from '../controllers/attendanceController.js';
 
 const router = express.Router();
 
-router.post('/attendance', (req, res) => {
-  console.log('POST /attendance route hit');
-  recordAttendance(req, res);
-});
+// Route to upload attendance
+router.post('/upload', uploadAttendance);
 
-router.get('/attendance/:employeeId/:date', (req, res) => {
-  console.log(`GET /attendance/${req.params.employeeId}/${req.params.date} route hit`);
-  getAttendance(req, res);
-});
+// Route to get attendance status
+// router.get('/checkAttendance', getAttendanceByDateRange);
+
+router.post('/getAttendanceByDateRange', getAttendanceByDateRange);
+
+router.get('/checkAttendance', checkAttendance);
+
+// Route to get attendance records for a specific month and year
+router.post('/getAttendanceByMonthAndYear', getAttendanceByMonthAndYear);
 
 export default router;

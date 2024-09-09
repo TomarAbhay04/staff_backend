@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const employeeSchema = new mongoose.Schema({
+const EmployeeSchema = new mongoose.Schema({
     personalDetails: {
         name: { type: String, required: true },
         address: { type: String, required: true },
@@ -23,6 +23,46 @@ const employeeSchema = new mongoose.Schema({
       }
     });
 
-    const Employee = mongoose.model('Employee', employeeSchema);
+    const vehicleMoveDataSchema = new mongoose.Schema({
+      // empId: String,
+      // name: String,
+      // mobileNo: String,
+      villageNameStart: String,
+      goingVillage: String,
+      startReading: Number,
+      endReading: Number,
+      totalKM: Number,
+      purpose: String,
+    });
 
-    export {Employee};
+
+    const transactionSchema = new mongoose.Schema({
+      transferAmount: {
+        type: Number,
+        required: true,
+      },
+      Date: {
+        type: Date,
+        required: true,
+      },
+      UtrNo: {
+        type: String,
+        required: true,
+        unique: true, // Ensure that UTR number is unique
+      },
+      SenderName: {
+        type: String,
+        required: true,
+      },
+      reason: {
+        type: String,
+        required: true,
+      }
+    }, { timestamps: true });
+    
+
+    const Employee = mongoose.model('Employee', EmployeeSchema);
+    const VehicleMoveData = mongoose.model('VehicleMoveData', vehicleMoveDataSchema);
+    const Transaction = mongoose.model('Transaction', transactionSchema);
+
+    export {Employee, VehicleMoveData, Transaction};
