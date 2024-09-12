@@ -1,4 +1,5 @@
 import { Employee } from '../models/Employee.js';
+import jwt from 'jsonwebtoken';
 
 // Add new employee
 export const addEmployee = async (req, res) => {
@@ -51,15 +52,28 @@ export const getEmployeeById = async (req, res) => {
 // Verify employee email
 export const verifyEmployeeEmail = async (req, res) => {
     try {
-        const { email } = req.params;
+        const { email } = req.body; // Get email from frontend
+    
+        // Check if email exists in the database
         const employee = await Employee.findOne({ 'personalDetails.email': email });
-        if (!employee) return res.status(404).json({ message: 'Employee not found' });
-        res.status(200).json({ message: 'Employee verified', employee });
-    } catch (error) {
-        console.error('Error verifying employee email:', error);
-        res.status(500).json({ message: 'Error verifying employee email', error: error.message });
-    }
-};
+    
+        if (!employee) {
+          return res.status(404).json({ message: 'Employee not found' });
+        }
+    
+        // Generate JWT token
+        const token = jwt.sign(
+          { id: employee._id, email: employee.personalDetails.email, role: employee.role },
+          process.env.JWT_SECRET,
+          { expiresIn: '1h' } // Token expires in 1 hour
+        );
+    
+        res.status(200).json({ message: 'Login successful', token });
+      } catch (error) {
+        console.error('Error during Google sign-in:', error);
+        res.status(500).json({ message: 'Error during Google sign-in', error: error.message });
+      }
+    };
 
 
 export const getEmployeeByEmail = async (req, res) => {

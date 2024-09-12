@@ -1,12 +1,17 @@
 import express from 'express';
-import { createVehicleMoveData, getAllVehicleMoveData } from '../controllers/vehicleMoveController.js';
+import { createVehicleMoveData, getAllVehicleMoveDataForAdmin, getVehicleMoveDataForEmployee } from '../controllers/vehicleMoveController.js';
+// import { authenticate } from '../middleware/authenticate.js';
 
 const router = express.Router();
 
 // Route to create VehicleMoveData
 router.post('/vehicle-move', createVehicleMoveData);
 
-// Route to fetch all VehicleMoveData
-router.get('/vehicle-move', getAllVehicleMoveData);
+// Admin routes
+router.get('/admin/vehicle-move', getAllVehicleMoveDataForAdmin);
+
+// Employee routes
+router.get('/vehicle-move/:employeeId', getVehicleMoveDataForEmployee);
+
 
 export default router;

@@ -24,19 +24,18 @@ const EmployeeSchema = new mongoose.Schema({
     });
 
     const vehicleMoveDataSchema = new mongoose.Schema({
-      // empId: String,
-      // name: String,
-      // mobileNo: String,
       villageNameStart: String,
       goingVillage: String,
       startReading: Number,
       endReading: Number,
       totalKM: Number,
       purpose: String,
+      employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true }, // Add this line
     });
 
 
     const transactionSchema = new mongoose.Schema({
+      employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
       transferAmount: {
         type: Number,
         required: true,

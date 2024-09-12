@@ -54,25 +54,31 @@ export const uploadAttendance = async (req, res) => {
       return res.status(404).json({ error: 'Employee not found' });
     }
 
+    // Check if the current date matches the date in the request body
+    const today = new Date().toISOString().split('T')[0];
+    if (date !== today) {
+      return res.status(400).json({ error: 'Attendance can only be uploaded for the current date' });
+    }
+
     // Check for existing attendance for the given employee, date, and period
     const existingAttendance = await Attendance.findOne({ employeeId, date, period });
     if (existingAttendance) {
       console.error('Attendance already exists for this period:', { employeeId, date, period });
-      return res.status(400).json({ error: `Attendance for ${period} period is already uploaded for today` });
+      return res.status(400).json({ error: `Attendance for period ${period} is already uploaded for today` });
     }
 
-    // Check for the first attendance of the day
+    // Check if this is the first attendance of the day
     const firstAttendance = await Attendance.findOne({ employeeId, date }).sort({ time: 1 });
 
     if (firstAttendance) {
-      // First attendance of the day already exists, so calculate the difference
+      // First attendance of the day exists, calculate the time difference
       const firstUploadTime = new Date(`${date}T${firstAttendance.time}`);
       const currentTime = new Date(`${date}T${time}`);
-
       const timeDifference = (currentTime - firstUploadTime) / (1000 * 60 * 60); // Time difference in hours
 
+      // Allow further periods to be uploaded within 12 hours of the first upload
       if (timeDifference > 12) {
-        return res.status(400).json({ error: 'Attendance can only be uploaded within 12 hours of the first upload.' });
+        return res.status(400).json({ error: 'Attendance for the remaining periods must be uploaded within 12 hours of the first upload.' });
       }
     }
 
@@ -89,6 +95,13 @@ export const uploadAttendance = async (req, res) => {
 
     await newAttendance.save();
     console.log('Attendance uploaded successfully:', newAttendance);
+
+    // Check if this is the 4th attendance of the day; if so, evaluate status immediately
+    const attendanceCount = await Attendance.countDocuments({ employeeId, date });
+    if (attendanceCount >= 4) {
+      await evaluateAttendanceStatusForEmployee(employeeId, date);
+    }
+
     return res.status(200).json({ message: 'Attendance uploaded successfully' });
   } catch (err) {
     console.error('Error uploading attendance:', err);
@@ -96,8 +109,28 @@ export const uploadAttendance = async (req, res) => {
   }
 };
 
+// Evaluate attendance status for an individual employee on a specific date
+export const evaluateAttendanceStatusForEmployee = async (employeeId, date) => {
+  try {
+    const attendances = await Attendance.find({ employeeId, date });
+    const periods = attendances.map(a => a.period);
 
-// Evaluate attendance status at the end of the day
+    let status = 'Absent';
+    if (periods.length >= 3) {
+      status = 'Present';
+    } else if (periods.length === 2) {
+      status = 'Half Day';
+    }
+
+    // Update the status for all attendance records of the employee for the day
+    await Attendance.updateMany({ employeeId, date }, { $set: { status } });
+    console.log(`Attendance status for employee ${employeeId} on ${date} updated to ${status}`);
+  } catch (error) {
+    console.log('Error evaluating attendance status for employee:', error);
+  }
+};
+
+// Evaluate attendance status for all employees at the end of the day
 export const evaluateAttendanceStatus = async () => {
   const now = new Date();
   const today = now.toISOString().split('T')[0];
@@ -110,26 +143,14 @@ export const evaluateAttendanceStatus = async () => {
       {
         $group: {
           _id: '$employeeId',
-          periods: { $addToSet: '$period' },
-          attendanceCount: { $sum: 1 }
+          periods: { $addToSet: '$period' }
         }
       }
     ]);
 
     for (const attendance of attendances) {
       const employeeId = attendance._id;
-      const periods = attendance.periods;
-      // const count = attendance.attendanceCount;
-
-
-      let status = 'Absent';
-      if (periods.length >=3) {
-        status = 'Present';
-      } else if (periods.length === 2) {
-        status = 'Half Day';
-      }
-
-      await Attendance.updateMany({ employeeId, date: today }, { $set: { status } });
+      await evaluateAttendanceStatusForEmployee(employeeId, today);
     }
 
     // Handle employees who didn't upload attendance at all
@@ -156,38 +177,39 @@ export const evaluateAttendanceStatus = async () => {
   }
 };
 
-// Schedule the evaluation task to run daily at 9 PM
-cron.schedule('0 21 * * *', () => {
+// Schedule the evaluation task to run daily at 3:02 AM
+cron.schedule('2 3 * * *', () => {
   console.log('Evaluating attendance status...');
   evaluateAttendanceStatus();
 });
 
-
-// Assuming you have a Mongoose model named Attendance
 export const getAttendanceByDateRange = async (req, res) => {
   try {
-    const { employeeId, startDate, endDate } = req.body;
+    const { startDate, endDate } = req.body;
 
     const start = new Date(startDate).toISOString().split('T')[0];
-    const end = endDate ? new Date(endDate).toISOString().split('T')[0] : start; // Default to single day if endDate is not provided
+    const end = endDate ? new Date(endDate).toISOString().split('T')[0] : start;
 
     const attendanceRecords = await Attendance.find({
-      employeeId,
-      date: { $gte: startDate, $lte: endDate },
+      date: { $gte: start, $lte: end },
+    })
+    .populate({
+      path: 'employeeId',
+      select: 'personalDetails.name', // Only select the employee's name
     });
 
     if (attendanceRecords.length === 0) {
-      // No attendance records found for the given date range
-      return res.status(200).json([]); // Returning an empty array is a common practice
+      return res.status(200).json({ message: 'No attendance records found for this date range.' });
     }
 
-    // Return the found attendance records
+    // Return the attendance records with populated employee names
     res.status(200).json(attendanceRecords);
   } catch (err) {
     console.error('Error retrieving attendance records:', err);
     res.status(500).json({ error: 'Error retrieving attendance records' });
   }
 };
+
 
 
 export const checkAttendance = async (req, res) => {

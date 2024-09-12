@@ -1,90 +1,94 @@
 import mongoose from 'mongoose';
 
-const memberSchema = new mongoose.Schema({
+
+const MemberSchema = new mongoose.Schema({
+  employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
   headName: {
     type: String,
     required: true,
-    trim: true
   },
   mobileNumber: {
     type: String,
     required: true,
-    trim: true
   },
   address: {
     type: String,
     required: true,
-    trim: true
   },
   donationAmount: {
-    type: Number,
-    required: true
+    type: Number, // Store as number
+    required: true,
   },
   rasidNo: {
     type: String,
     required: true,
-    trim: true
   },
   familyMembers: {
-    type: Number
+    type: String,
   },
   occupation: {
     type: String,
-    trim: true
   },
   gauwansh: {
-    type: Number
+    type: String,
   },
   tractor: {
-    type: String,
-    enum: ['yes', 'no']
+    type: String, // yes or no
+  },
+  tractorCount: {
+    type: Number, // Convert string to number
   },
   twoWheeler: {
     type: String,
-    enum: ['yes', 'no']
+  },
+  twoWheelerCount: {
+    type: Number, // Convert string to number
   },
   fourWheeler: {
     type: String,
-    enum: ['yes', 'no']
+  },
+  fourWheelerCount: {
+    type: Number, // Convert string to number
   },
   educationRequired: {
     type: String,
-    enum: ['yes', 'no']
   },
-  searchingJob: {
+  jobSearch: {
     type: String,
-    enum: ['yes', 'no']
   },
   mahilaSamuh: {
     type: String,
-    enum: ['yes', 'no']
+  },
+  mahilaSamuhCount: {
+    type: Number, // Convert string to number
   },
   loanRunning: {
     type: String,
-    enum: ['yes', 'no']
+  },
+  loanRunningAmount: {
+    type: Number, // Convert string to number
   },
   needLoan: {
     type: String,
-    enum: ['yes', 'no']
+  },
+  loanRequiredAmount: {
+    type: Number, // Convert string to number
   },
   otherDetails: {
     type: String,
-    trim: true
   },
-  donationDetails: {
+  donationDetailsText: {
     type: String,
-    trim: true
   },
-  donationInWords: {
+  donationAmountInWords: {
     type: String,
-    trim: true
   },
-  remarks: {
+  remark: {
     type: String,
-    trim: true
   }
-}, { timestamps: true });
+});
 
-const Member = mongoose.model('Member', memberSchema);
+const Member = mongoose.model('Member', MemberSchema);
+
 
 export default Member;

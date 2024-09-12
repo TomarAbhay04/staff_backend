@@ -4,7 +4,9 @@ import {
   getMembers,         // Fetching all members
   getMemberById,      // Fetching a single member by ID
   getMemberForStep2,  // Fetch member data for Step 2
-  updateMemberStep2   // Updating member in Step 2
+  updateMemberStep2,  // Updating member in Step 2
+  getTotalSurveysAndData,  // Calculating total surveys and data
+  getMemberDataForEmployee, // Fetching member data for the logged-in employee
 } from '../controllers/memberController.js';
 
 const router = express.Router();
@@ -13,6 +15,10 @@ const router = express.Router();
 router.route('/')
   .get(getMembers)        // GET request to fetch all members
   .post(createMemberStep1);  // POST request to create a member (Step 1)
+  
+
+  // Route to calculate total family members added by all employees
+router.get('/total-surveys-and-data', getTotalSurveysAndData);  // New route to calculate total family members
 
 // Route to get a single member by ID and fetch member for Step 2 or update member (Step 2)
 router.route('/:id')
@@ -21,5 +27,7 @@ router.route('/:id')
 
 // Route to get member data for Step 2 (specific fetch based on ID)
 router.get('/step2/:id', getMemberForStep2);  // Fetch member data for Step 2
+
+router.get('/employee/:employeeId',  getMemberDataForEmployee); // Fetch member data for the logged-in employee
 
 export default router;
