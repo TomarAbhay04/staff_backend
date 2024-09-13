@@ -1,5 +1,5 @@
 import { Employee } from '../models/Employee.js';
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 
 // Add new employee
 export const addEmployee = async (req, res) => {
@@ -52,7 +52,7 @@ export const getEmployeeById = async (req, res) => {
 // Verify employee email
 export const verifyEmployeeEmail = async (req, res) => {
     try {
-        const { email } = req.body; // Get email from frontend
+        const { email } = req.params; // Get email from frontend
     
         // Check if email exists in the database
         const employee = await Employee.findOne({ 'personalDetails.email': email });
@@ -62,13 +62,13 @@ export const verifyEmployeeEmail = async (req, res) => {
         }
     
         // Generate JWT token
-        const token = jwt.sign(
-          { id: employee._id, email: employee.personalDetails.email, role: employee.role },
-          process.env.JWT_SECRET,
-          { expiresIn: '1h' } // Token expires in 1 hour
-        );
+        // const token = jwt.sign(
+        //   { id: employee._id, email: employee.personalDetails.email, role: employee.role },
+        //   process.env.JWT_SECRET,
+        //   { expiresIn: '1h' } // Token expires in 1 hour
+        // );
     
-        res.status(200).json({ message: 'Login successful', token });
+        res.status(200).json({ message: 'Login successful', employee });
       } catch (error) {
         console.error('Error during Google sign-in:', error);
         res.status(500).json({ message: 'Error during Google sign-in', error: error.message });
