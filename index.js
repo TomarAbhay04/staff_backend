@@ -2,7 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import cors from 'cors';
-// import bodyParser from 'body-parser';
 import EmployeeRoute from './routes/EmployeeRoute.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
