@@ -59,4 +59,6 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
+// this is the index.js file
+
 export default app;
