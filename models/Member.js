@@ -1,94 +1,80 @@
 import mongoose from 'mongoose';
 
-
 const MemberSchema = new mongoose.Schema({
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-  headName: {
+  FamilyHeadName: { type: String, required: true },
+  MobileNumber: { type: String, required: true },
+  Address: { type: String, required: true },
+  VillageName: { type: String },
+  State: { type: String },
+  City: { type: String },
+  
+  DonationAmount: { type: Number, default: 0 }, // Added default value
+
+  RasidNo: { type: String },
+  FamilyMembers: { type: String },
+  Occupation: { type: String },
+  Gauwansh: { type: String },
+
+  Tractor: {
     type: String,
-    required: true,
-  },
-  mobileNumber: {
-    type: String,
-    required: true,
-  },
-  address: {
-    type: String,
-    required: true,
-  },
-  donationAmount: {
-    type: Number, // Store as number
-    required: true,
-  },
-  rasidNo: {
-    type: String,
-    required: true,
-  },
-  familyMembers: {
-    type: String,
-  },
-  occupation: {
-    type: String,
-  },
-  gauwansh: {
-    type: String,
-  },
-  tractor: {
-    type: String, // yes or no
+    enum: ['yes', 'no'], // Added enum for validation
   },
   tractorCount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  twoWheeler: {
+
+  TwoWheeler: {
     type: String,
+    enum: ['yes', 'no'], // Added enum for validation
   },
   twoWheelerCount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  fourWheeler: {
+
+  FourWheeler: {
     type: String,
+    enum: ['yes', 'no'], // Added enum for validation
   },
   fourWheelerCount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  educationRequired: {
-    type: String,
-  },
-  jobSearch: {
-    type: String,
-  },
-  mahilaSamuh: {
-    type: String,
-  },
+
+  EducationRequired: { type: String },
+  jobSearch: { type: String },
+  MahilaSamuh: { type: String },
   mahilaSamuhCount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  loanRunning: {
+
+  LoanRunning: {
     type: String,
+    enum: ['yes', 'no'], // Added enum for validation
   },
   loanRunningAmount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  needLoan: {
+
+  NeedLoan: {
     type: String,
+    enum: ['yes', 'no'], // Added enum for validation
   },
   loanRequiredAmount: {
-    type: Number, // Convert string to number
+    type: Number,
+    default: 0, // Added default value
   },
-  otherDetails: {
-    type: String,
-  },
-  donationDetailsText: {
-    type: String,
-  },
-  donationAmountInWords: {
-    type: String,
-  },
-  remark: {
-    type: String,
-  }
+
+  OtherDetails: { type: String },
+  DonationDetailsText: { type: String },
+  OtherDonation: { type: String },
+  Remark: { type: String }
 });
 
 const Member = mongoose.model('Member', MemberSchema);
-
 
 export default Member;

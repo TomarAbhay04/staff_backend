@@ -66,3 +66,52 @@ export const getVehicleMoveDataForEmployee = async (req, res) => {
     return res.status(500).json({ message: "Error fetching vehicle move data", error: error.message });
   }
 };
+
+// Update vehicle move data (for both admin and employees)
+export const updateVehicleMoveData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { goingVillage, endReading } = req.body;
+
+    // Fetch the existing record to get startReading
+    const vehicleMoveData = await VehicleMoveData.findById(id);
+
+    if (!vehicleMoveData) {
+      return res.status(404).json({ message: "Vehicle move data not found" });
+    }
+
+    // Calculate totalKM if startReading and endReading are available
+    let totalKM = null;
+    if (vehicleMoveData.startReading && endReading) {
+      totalKM = endReading - vehicleMoveData.startReading;
+    }
+
+    // Update the vehicle move data
+    const updatedVehicleMoveData = await VehicleMoveData.findByIdAndUpdate(
+      id,
+      { goingVillage, endReading, totalKM },
+      { new: true } // Return the updated document
+    );
+
+    return res.status(200).json({ message: "Vehicle move data updated successfully", data: updatedVehicleMoveData });
+  } catch (error) {
+    return res.status(500).json({ message: "Error updating vehicle move data", error: error.message });
+  }
+};
+
+
+// Delete vehicle move data
+export const deleteVehicleMoveData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedVehicleMoveData = await VehicleMoveData.findByIdAndDelete(id);
+
+    if (!deletedVehicleMoveData) {
+      return res.status(404).json({ message: "Vehicle move data not found" });
+    }
+
+    return res.status(200).json({ message: "Vehicle move data deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error deleting vehicle move data", error: error.message });
+  }
+};
