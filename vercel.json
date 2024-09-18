@@ -12,6 +12,10 @@
       "dest": "/index.js"
     },
     {
+      "src": "/api/members/employee-surveys/(.*)",
+      "dest": "/routes/employee-surveys/[...].js"
+    },
+    {
       "src": "/(.*)",      
       "dest": "/index.html"
     }
