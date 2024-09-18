@@ -35,13 +35,13 @@ app.get('/', (req, res) => {
 });
 
 // Resolve __dirname using import.meta.url
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 // Serve static files from the React app
 // app.use(express.static(path.join(__dirname, '../FRONTEND/dist')));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/employees', EmployeeRoute);
 app.use('/api', attendanceRoutes);  
