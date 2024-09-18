@@ -2,12 +2,15 @@ import mongoose from 'mongoose';
 
 const MemberSchema = new mongoose.Schema({
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
-  FamilyHeadName: { type: String, required: true },
-  MobileNumber: { type: String, required: true },
+  FirstName: { type: String, required: true },
+  LastName: { type: String, required: true },
+  MobileNumber: { type: String, default: '1234567890' }, // Added default value
   Address: { type: String, required: true },
   VillageName: { type: String },
   State: { type: String },
   City: { type: String },
+  surveyDate: { type: Date, default: Date.now }, // Added default value
+  
   
   DonationAmount: { type: Number, default: 0 }, // Added default value
 

@@ -6,7 +6,9 @@ import mongoose from 'mongoose';
 export const createMemberStep1 = async (req, res) => {
   const { 
     employeeId, 
-    FamilyHeadName, 
+    FirstName, 
+    LastName,
+    surveyDate,
     MobileNumber, 
     Address, 
     VillageName,
@@ -28,7 +30,9 @@ export const createMemberStep1 = async (req, res) => {
     // Create new member instance for Step 1
     const member = new Member({
       employeeId,
-      FamilyHeadName,
+      FirstName,
+      LastName,
+      surveyDate,
       MobileNumber,
       Address,
       VillageName,
