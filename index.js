@@ -5,8 +5,6 @@ import cors from 'cors';
 import EmployeeRoute from './routes/EmployeeRoute.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import memberRoutes from './routes/memberRoutes.js';
 import vehicleMoveRoutes from './routes/vehicleMoveRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';  
@@ -19,10 +17,9 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// app.use(bodyParser.json());
 
+// MongoDB connection
 const mongoURI = process.env.MONGODB_URI;
-
 mongoose.connect(mongoURI)
     .then(() => console.log('MongoDB Connected…'))
     .catch((err) => {
@@ -30,35 +27,21 @@ mongoose.connect(mongoURI)
         process.exit(1); // Exit process if database connection fails
     });
 
-app.get('/', (req, res) => {
-    res.send('Localhost from the staff dashboard!');
-});
-
-// Resolve __dirname using import.meta.url
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// Serve static files from the React app
-// app.use(express.static(path.join(__dirname, '../FRONTEND/dist')));
-
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+// Define API routes
 app.use('/api/employees', EmployeeRoute);
 app.use('/api', attendanceRoutes);  
 app.use('/api', taskRoutes);
-app.use('/api/members', memberRoutes);
+app.use('/api/members', memberRoutes);  // Specifically handle members API
 app.use('/api', vehicleMoveRoutes);
 app.use('/api', transactionRoutes);
 
-// Handle client-side routing, return index.html for unmatched routes
-// app.get('*', (req, res) => {
-//     // res.sendFile(path.join(__dirname, '../FRONTEND/dist/index.html'));
-// });
+// Handle basic root request
+app.get('/', (req, res) => {
+    res.send('Server is up and running!');
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-// this is the index.js file
 
 export default app;
