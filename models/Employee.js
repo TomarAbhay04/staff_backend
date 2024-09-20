@@ -31,6 +31,10 @@ const EmployeeSchema = new mongoose.Schema({
       totalKM: Number,
       purpose: String,
       employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true }, // Add this line
+      isEditable: {
+        type: Boolean,
+        default: true, // Mark it editable by default
+      },
     });
 
 

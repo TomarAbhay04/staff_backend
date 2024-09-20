@@ -19,6 +19,7 @@ export const createVehicleMoveData = async (req, res) => {
       totalKM,
       purpose,
       employeeId, // Add employee ID to the data
+      isEditable: true, // Set it as editable when creating a new record
     });
 
     await newVehicleMoveData.save();
@@ -54,18 +55,47 @@ export const getAllVehicleMoveDataForAdmin = async (req, res) => {
 };
 
 // For Employees: Get vehicle move data for the logged-in employee
+// export const getVehicleMoveDataForEmployee = async (req, res) => {
+//   try {
+//     const { employeeId } = req.params; // Get employee ID from request parameters
+//     if (!employeeId) return res.status(400).json({ message: "Employee ID is required" });
+
+//     const vehicleMoveData = await VehicleMoveData.find({ employeeId });
+//     return res.status(200).json({ message: "Vehicle move data fetched successfully", data: vehicleMoveData });
+//   } catch (error) {
+//     console.error('Error fetching vehicle move data:', error);
+//     return res.status(500).json({ message: "Error fetching vehicle move data", error: error.message });
+//   }
+// };
+
 export const getVehicleMoveDataForEmployee = async (req, res) => {
   try {
     const { employeeId } = req.params; // Get employee ID from request parameters
-    if (!employeeId) return res.status(400).json({ message: "Employee ID is required" });
+    if (!employeeId) {
+      return res.status(400).json({ message: "Employee ID is required" });
+    }
 
+    // Fetch vehicle move data for the employee
     const vehicleMoveData = await VehicleMoveData.find({ employeeId });
-    return res.status(200).json({ message: "Vehicle move data fetched successfully", data: vehicleMoveData });
+
+    // Add a flag to indicate if the record is editable
+    const dataWithEditStatus = vehicleMoveData.map((data) => {
+      return {
+        ...data.toObject(), // Convert Mongoose document to plain JavaScript object
+        isEditable: !(data.goingVillage && data.endReading), // If both fields have values, it's not editable
+      };
+    });
+
+    return res.status(200).json({
+      message: "Vehicle move data fetched successfully",
+      data: dataWithEditStatus, // Return the modified data with the edit flag
+    });
   } catch (error) {
-    console.error('Error fetching vehicle move data:', error);
+    console.error("Error fetching vehicle move data:", error);
     return res.status(500).json({ message: "Error fetching vehicle move data", error: error.message });
   }
 };
+
 
 // Update vehicle move data (for both admin and employees)
 export const updateVehicleMoveData = async (req, res) => {
@@ -86,10 +116,14 @@ export const updateVehicleMoveData = async (req, res) => {
       totalKM = endReading - vehicleMoveData.startReading;
     }
 
+     // Check if the record should still be editable
+     const isEditable = !(goingVillage && endReading); // Disable edit if both fields are set
+
+
     // Update the vehicle move data
     const updatedVehicleMoveData = await VehicleMoveData.findByIdAndUpdate(
       id,
-      { goingVillage, endReading, totalKM },
+      { goingVillage, endReading, totalKM, isEditable }, // Update the fields
       { new: true } // Return the updated document
     );
 
