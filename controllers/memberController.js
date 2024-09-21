@@ -75,7 +75,7 @@ export const updateMemberStep2 = async (req, res) => {
   const {
     FamilyMembers, Occupation, Gauwansh, Tractor, TwoWheeler, FourWheeler,
     EducationRequired, searchingJob, MahilaSamuh, LoanRunning, NeedLoan,
-    OtherDetails, DonationDetails, OtherDonation, Remarks,
+    OtherDetails, DonationDetails, Remarks,
     // Numeric fields that need parsing
     tractorCount, twoWheelerCount, fourWheelerCount, mahilaSamuhCount, loanRunningAmount, loanRequiredAmount
   } = req.body;
@@ -97,7 +97,7 @@ export const updateMemberStep2 = async (req, res) => {
         NeedLoan,
         OtherDetails,
         DonationDetails,
-        OtherDonation,
+        // OtherDonation,
         Remarks,
         // Convert string to number if present, otherwise default to null or 0
         tractorCount: tractorCount ? parseInt(tractorCount, 10) : null,
@@ -152,15 +152,80 @@ export const getMemberById = async (req, res) => {
 };
 
 
+// export const getTotalSurveysAndData = async (req, res) => {
+//   try {
+//     const result = await Member.aggregate([
+//       {
+//         $group: {
+//           _id: null,
+//           totalFamilyMembers: { $sum: { $toInt: "$FamilyMembers" } }, // Convert familyMembers to integer
+//           totalMahilaSamuh: { $sum: "$mahilaSamuhCount" }, // Sum of mahilaSamuhCount
+//           totalSurveys: { $sum: 1 } // Total count of documents (surveys)
+//         }
+//       }
+//     ]);
+
+//     if (result.length === 0) {
+//       return res.status(404).json({ message: "No data found" });
+//     }
+
+//     const { totalFamilyMembers, totalMahilaSamuh, totalSurveys } = result[0];
+
+//     res.status(200).json({
+//       totalFamilyMembers,
+//       totalMahilaSamuh,
+//       totalSurveys
+//     });
+//   } catch (error) {
+//     console.error("Error calculating totals:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const getTotalSurveysAndData = async (req, res) => {
   try {
     const result = await Member.aggregate([
       {
         $group: {
           _id: null,
-          totalFamilyMembers: { $sum: { $toInt: "$FamilyMembers" } }, // Convert familyMembers to integer
-          totalMahilaSamuh: { $sum: "$mahilaSamuhCount" }, // Sum of mahilaSamuhCount
-          totalSurveys: { $sum: 1 } // Total count of documents (surveys)
+          totalFamilyMembers: {
+            $sum: {
+              $cond: {
+                if: { $gt: [{ $toInt: { $ifNull: ["$FamilyMembers", "0"] } }, 0] }, // Convert FamilyMembers to integer or default to 0
+                then: { $toInt: "$FamilyMembers" },
+                else: 0
+              }
+            }
+          },
+          totalMahilaSamuh: {
+            $sum: { $ifNull: ["$mahilaSamuhCount", 0] } // Sum of mahilaSamuhCount, default to 0 if null
+          },
+          totalSurveys: { $sum: 1 }, // Total count of documents (surveys)
+          uniqueVillageNames: {
+            $addToSet: {
+              $cond: {
+                if: { $and: [{ $ne: ["$VillageName", null] }, { $ne: ["$VillageName", ""] }] }, // Exclude null or empty village names
+                then: "$VillageName",
+                else: null
+              }
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          totalFamilyMembers: 1,
+          totalMahilaSamuh: 1,
+          totalSurveys: 1,
+          totalUniqueVillages: {
+            $size: {
+              $filter: {
+                input: "$uniqueVillageNames",
+                as: "village",
+                cond: { $ne: ["$$village", null] } // Count non-null unique village names
+              }
+            }
+          }
         }
       }
     ]);
@@ -169,18 +234,20 @@ export const getTotalSurveysAndData = async (req, res) => {
       return res.status(404).json({ message: "No data found" });
     }
 
-    const { totalFamilyMembers, totalMahilaSamuh, totalSurveys } = result[0];
+    const { totalFamilyMembers, totalMahilaSamuh, totalSurveys, totalUniqueVillages } = result[0];
 
     res.status(200).json({
       totalFamilyMembers,
       totalMahilaSamuh,
-      totalSurveys
+      totalSurveys,
+      totalUniqueVillages // Return total unique villages
     });
   } catch (error) {
     console.error("Error calculating totals:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const getEmployeeSurveysAndData = async (req, res) => {
   const { employeeId } = req.params; // Get employeeId from request parameters
@@ -207,6 +274,7 @@ export const getEmployeeSurveysAndData = async (req, res) => {
       {
         $group: {
           _id: null,
+          
           totalFamilyMembers: {
             $sum: {
               $cond: {
@@ -219,7 +287,26 @@ export const getEmployeeSurveysAndData = async (req, res) => {
           totalMahilaSamuh: {
             $sum: { $ifNull: ["$mahilaSamuhCount", 0] } // Sum of mahilaSamuhCount, default to 0 if null
           },
-          totalSurveys: { $sum: 1 } // Total count of documents (surveys)
+          totalSurveys: { $sum: 1 }, // Total count of documents (surveys)
+
+
+          uniqueVillageNames: {
+            $addToSet: {
+              $cond: {
+                if: { $and: [{ $ne: ["$VillageName", null] }, { $ne: ["$VillageName", ""] }] }, // Exclude null or empty village names
+                then: "$VillageName",
+                else: null
+              }
+            }
+          }
+        }
+      },
+      { 
+        $project: {
+          totalFamilyMembers: 1,
+          totalMahilaSamuh: 1,
+          totalSurveys: 1,
+          totalUniqueVillages: { $size: { $filter: { input: "$uniqueVillageNames", as: "village", cond: { $ne: ["$$village", null] } } } }
         }
       }
     ]);
@@ -229,17 +316,19 @@ export const getEmployeeSurveysAndData = async (req, res) => {
       return res.status(404).json({ message: "No data found for this employee" });
     }
 
-    const { totalFamilyMembers, totalMahilaSamuh, totalSurveys } = result[0];
+    const { totalFamilyMembers, totalMahilaSamuh, totalSurveys, totalUniqueVillages } = result[0];
 
     console.log('Total Family Members:', totalFamilyMembers);
     console.log('Total Mahila Samuh:', totalMahilaSamuh);
     console.log('Total Surveys:', totalSurveys);
+    console.log('Total Unique Villages:', totalUniqueVillages);
 
     // Send response with calculated data
     res.status(200).json({
       totalFamilyMembers,
       totalMahilaSamuh,
-      totalSurveys
+      totalSurveys,
+      totalUniqueVillages
     });
   } catch (error) {
     console.error("Error calculating employee totals:", error);
@@ -280,7 +369,7 @@ export const updateMember = async (req, res) => {
     NeedLoan,
     OtherDetails,
     DonationDetails,
-    OtherDonation,
+    // OtherDonation,
     Remarks
   } = req.body; // Extract the fields to update from the request body
 
@@ -302,7 +391,7 @@ export const updateMember = async (req, res) => {
         NeedLoan,
         OtherDetails,
         DonationDetails,
-        OtherDonation,
+        // OtherDonation,
         Remarks
       },
       { new: true, runValidators: true } // Return the updated document and run validation
@@ -339,3 +428,7 @@ export const deleteMember = async (req, res) => {
     res.status(500).json({ message: 'Server error, could not delete member.', error: error.message });
   }
 };
+
+
+
+//  ahmedabad , ghad ke pura, shantipuram, 2342, sdfs, ress, we, sdf, sdfsdf, sfsd, 

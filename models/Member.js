@@ -74,7 +74,7 @@ const MemberSchema = new mongoose.Schema({
 
   OtherDetails: { type: String },
   DonationDetailsText: { type: String },
-  OtherDonation: { type: String },
+  // OtherDonation: { type: String },
   Remark: { type: String }
 });
 
