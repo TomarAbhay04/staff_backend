@@ -15,9 +15,13 @@ const EmployeeSchema = new mongoose.Schema({
         department: { type: String, required: true },
         dateOfJoining: { type: Date },
         status: { type: String, enum: ['Active', 'Inactive'], required: true },
+
       },
       financialDetails: {
         basicSalary: { type: Number, required: true },
+        bankName: { type: String },
+        bankBranch: { type: String },
+        ifscCode: { type: String },
         bankAccountNumber: { type: String },
         upiId: { type: String },
         cashOptions: { type: Boolean }, // Indicates if cash payment is an option
