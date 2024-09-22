@@ -9,6 +9,7 @@ const EmployeeSchema = new mongoose.Schema({
         photo: { type: String }, // URL or path to the photo
         gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
       },
+      // remove the unique employeeId field
       companyDetails: {
         employeeId: { type: String, required: true },
         department: { type: String, required: true },
