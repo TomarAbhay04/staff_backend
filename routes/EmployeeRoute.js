@@ -7,12 +7,14 @@ import {
     verifyEmployeeEmail,
     getEmployeeByEmail,
     updateEmployee,
+    deleteEmployee
 } from '../controllers/EmployeeController.js';
 
 const router = express.Router();
 
 // Use multer middleware to handle file upload for addEmployee and updateEmployee routes
 router.post('/add', upload.single('photo'), addEmployee);
+router.delete('/:id', deleteEmployee);
 router.put('/:id', upload.single('photo'), updateEmployee);
 router.get('/', getAllEmployees);
 router.get('/:id', getEmployeeById);
