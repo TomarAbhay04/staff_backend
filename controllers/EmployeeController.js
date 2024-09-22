@@ -2,21 +2,47 @@ import { Employee } from '../models/Employee.js';
 // import jwt from 'jsonwebtoken';
 
 // Add new employee
+// export const addEmployee = async (req, res) => {
+//     try {
+//         const { personalDetails, companyDetails, financialDetails } = JSON.parse(req.body.data);
+
+//         // If a photo is uploaded, update the photo field
+//         if (req.file) {
+//             personalDetails.photo = req.file.path; // Store the path of the uploaded photo
+//         }
+
+//         const employee = new Employee({
+//             personalDetails,
+//             companyDetails,
+//             financialDetails
+//         });
+
+//         await employee.save();
+//         res.status(201).json({ message: 'Employee added successfully', employee });
+//     } catch (error) {
+//         console.error('Error adding employee:', error);
+//         res.status(400).json({ message: 'Error adding employee', error: error.message });
+//     }
+// };
+
 export const addEmployee = async (req, res) => {
     try {
-        const { personalDetails, companyDetails, financialDetails } = JSON.parse(req.body.data);
+        // Directly access the employee data from req.body
+        const { personalDetails, companyDetails, financialDetails } = req.body;
 
-        // If a photo is uploaded, update the photo field
-        if (req.file) {
-            personalDetails.photo = req.file.path; // Store the path of the uploaded photo
+        // Check if all required details are provided
+        if (!personalDetails || !companyDetails || !financialDetails) {
+            return res.status(400).json({ message: "Required employee details are missing" });
         }
 
+        // Create a new employee instance
         const employee = new Employee({
-            personalDetails,
-            companyDetails,
-            financialDetails
+            personalDetails,  // Use the object directly
+            companyDetails,   // Use the object directly
+            financialDetails  // Use the object directly
         });
 
+        // Save the employee to the database
         await employee.save();
         res.status(201).json({ message: 'Employee added successfully', employee });
     } catch (error) {
@@ -24,7 +50,6 @@ export const addEmployee = async (req, res) => {
         res.status(400).json({ message: 'Error adding employee', error: error.message });
     }
 };
-
 
 // Get all employees
 export const getAllEmployees = async (req, res) => {
