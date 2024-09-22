@@ -10,7 +10,7 @@ const EmployeeSchema = new mongoose.Schema({
         gender: { type: String, enum: ['Male', 'Female', 'Other'], required: true },
       },
       companyDetails: {
-        employeeId: { type: String, required: true, unique: true },
+        employeeId: { type: String, required: true },
         department: { type: String, required: true },
         dateOfJoining: { type: Date },
         status: { type: String, enum: ['Active', 'Inactive'], required: true },
