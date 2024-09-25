@@ -96,12 +96,6 @@ export const uploadAttendance = async (req, res) => {
     await newAttendance.save();
     console.log('Attendance uploaded successfully:', newAttendance);
 
-    // Check if this is the 4th attendance of the day; if so, evaluate status immediately
-    const attendanceCount = await Attendance.countDocuments({ employeeId, date });
-    if (attendanceCount >= 4) {
-      await evaluateAttendanceStatusForEmployee(employeeId, date);
-    }
-
     return res.status(200).json({ message: 'Attendance uploaded successfully' });
   } catch (err) {
     console.error('Error uploading attendance:', err);
@@ -210,6 +204,50 @@ export const getAttendanceByDateRange = async (req, res) => {
   }
 };
 
+
+export const getAvailablePeriods = async (req, res) => {
+  try {
+    const { employeeId } = req.query;
+
+    console.log('Fetching available periods for employeeId:', employeeId);
+
+    // Fetch all periods uploaded by the employee for today
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    console.log('Today\'s date:', today);
+
+    const uploadedAttendance = await Attendance.find({ employeeId, date: today });
+    console.log('Uploaded attendance for today:', uploadedAttendance);
+
+    // Define all periods
+    const periods = ['first', 'second', 'third', 'fourth'];
+
+    // Determine which period is next based on uploaded data
+    const uploadedPeriods = uploadedAttendance.map((attendance) => attendance.period);
+    console.log('Uploaded periods:', uploadedPeriods);
+
+    const nextAvailablePeriod = periods.find((period) => !uploadedPeriods.includes(period));
+    console.log('Next available period:', nextAvailablePeriod);
+
+    // If no period is available, the day is complete
+    if (!nextAvailablePeriod) {
+      console.log('All periods have been uploaded for today.');
+      return res.status(200).json({
+        availablePeriods: [],
+        message: 'All periods have been uploaded for today.',
+      });
+    }
+
+    return res.status(200).json({
+      availablePeriods: [nextAvailablePeriod],
+    });
+  } catch (error) {
+    console.error('Error fetching available periods:', error.message);
+    return res.status(500).json({
+      message: 'Error fetching available periods',
+      error: error.message,
+    });
+  }
+};
 
 
 export const checkAttendance = async (req, res) => {

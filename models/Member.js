@@ -9,7 +9,7 @@ const MemberSchema = new mongoose.Schema({
   VillageName: { type: String },
   State: { type: String },
   City: { type: String },
-  surveyDate: { type: Date, default: Date.now }, // Added default value
+  surveyDate: { type: Date }, // Added default value
   
   
   DonationAmount: { type: Number, default: 0 }, // Added default value
@@ -76,6 +76,10 @@ const MemberSchema = new mongoose.Schema({
   DonationDetailsText: { type: String },
   // OtherDonation: { type: String },
   Remark: { type: String }
+},
+{
+  timestamps: true, // Added timestamps
+  
 });
 
 const Member = mongoose.model('Member', MemberSchema);

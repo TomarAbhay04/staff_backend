@@ -35,7 +35,7 @@ export const createVehicleMoveData = async (req, res) => {
 export const getAllVehicleMoveDataForAdmin = async (req, res) => {
   try {
     // Fetch vehicle move data and populate employee details
-    const vehicleMoveData = await VehicleMoveData.find()
+    const vehicleMoveData = await VehicleMoveData.find().sort({ createdAt: -1 })
       .populate({
         path: 'employeeId',
         select: 'personalDetails companyDetails', // Specify fields to include
@@ -76,7 +76,7 @@ export const getVehicleMoveDataForEmployee = async (req, res) => {
     }
 
     // Fetch vehicle move data for the employee
-    const vehicleMoveData = await VehicleMoveData.find({ employeeId });
+    const vehicleMoveData = await VehicleMoveData.find({ employeeId }).sort({ createdAt: -1 }); // Sort by createdAt in descending order (-1);
 
     // Add a flag to indicate if the record is editable
     const dataWithEditStatus = vehicleMoveData.map((data) => {

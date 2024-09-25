@@ -125,7 +125,10 @@ export const updateMemberStep2 = async (req, res) => {
 // Get all members
 export const getMembers = async (req, res) => {
   try {
-    const members = await Member.find();
+    // const members = await Member.find();
+    const members = await Member.find()
+    // .sort({ createdAt: -1 });;
+    .sort({ createdAt: -1, _id: 1 });
     res.status(200).json(members);
   } catch (error) {
     console.error('Error fetching members:', error);
@@ -139,6 +142,10 @@ export const getMemberById = async (req, res) => {
 
   try {
     const member = await Member.findById(id);
+    // const member = await Member.find()
+    // .sort({ createdAt: -1, _id: 1 });
+    // sort({ _id: -1 });
+    // .sort({ createdAt: -1, _id: 1 });
 
     if (!member) {
       return res.status(404).json({ message: 'Member not found.' });
@@ -342,7 +349,7 @@ export const getMemberDataForEmployee = async (req, res) => {
     console.log('Received request to fetch member data for employee:', employeeId);
     if (!employeeId) return res.status(400).json({ message: "Employee ID is required" });
 
-    const members = await Member.find({ employeeId });
+    const members = await Member.find({ employeeId }).sort({ createdAt: -1 }); // Sort by createdAt in descending order (-1);
     if (!members.length) return res.status(404).json({ message: "No members found for this employee" });
 
     return res.status(200).json({ message: "Survey data", data: members });

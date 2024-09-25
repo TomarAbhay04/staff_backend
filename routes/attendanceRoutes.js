@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadAttendance, getAttendanceByDateRange, checkAttendance, getAttendanceByMonthAndYear} from '../controllers/attendanceController.js';
+import { uploadAttendance, getAttendanceByDateRange, checkAttendance, getAttendanceByMonthAndYear, getAvailablePeriods} from '../controllers/attendanceController.js';
 
 const router = express.Router();
 
@@ -15,5 +15,8 @@ router.get('/checkAttendance', checkAttendance);
 
 // Route to get attendance records for a specific month and year
 router.post('/getAttendanceByMonthAndYear', getAttendanceByMonthAndYear);
+
+// Route to get available periods
+router.get('/getAvailablePeriods', getAvailablePeriods);
 
 export default router;

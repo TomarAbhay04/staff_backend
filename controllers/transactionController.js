@@ -87,7 +87,7 @@ export const getTransactions = async (req, res) => {
       const { employeeId } = req.params;
       if (!employeeId) return res.status(400).json({ message: "Employee ID is required" });
 
-      const transactions = await Transaction.find({ employeeId });
+      const transactions = await Transaction.find({ employeeId }).sort({ createdAt: -1 }); // Sort by createdAt in descending order (-1);
     return  res.status(200).json({message: "transaction data", data: transactions});
     } catch (error) {
       console.error('Error fetching transactions:', error);

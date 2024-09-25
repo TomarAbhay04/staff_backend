@@ -40,7 +40,7 @@ const EmployeeSchema = new mongoose.Schema({
         type: Boolean,
         default: true, // Mark it editable by default
       },
-    });
+    }, { timestamps: true });
 
 
     const transactionSchema = new mongoose.Schema({
