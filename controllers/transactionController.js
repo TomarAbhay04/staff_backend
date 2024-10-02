@@ -95,3 +95,28 @@ export const getTransactions = async (req, res) => {
     }
   };
   
+
+  export const updateTransactionStatus = async (req, res) => {
+    try {
+      const { transactionId, status } = req.body; // status should be 'verified', 'cancelled', or 'pending'
+      
+      if (!['pending', 'verified', 'cancelled'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value' });
+      }
+  
+      const updatedTransaction = await Transaction.findByIdAndUpdate(
+        transactionId,
+        { status },
+        { new: true }
+      );
+  
+      if (!updatedTransaction) {
+        return res.status(404).json({ message: 'Transaction not found' });
+      }
+  
+      res.status(200).json(updatedTransaction);
+    } catch (error) {
+      console.error('Error updating transaction status:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  };

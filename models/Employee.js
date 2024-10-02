@@ -65,7 +65,12 @@ const EmployeeSchema = new mongoose.Schema({
       reason: {
         type: String,
         required: true,
-      }
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'verified', 'cancelled'], // Enum for allowed statuses
+        default: 'pending', // Default status is pending
+      },
     }, { timestamps: true });
     
 
