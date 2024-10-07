@@ -98,7 +98,10 @@ export const getTransactions = async (req, res) => {
 
   export const updateTransactionStatus = async (req, res) => {
     try {
-      const { transactionId, status } = req.body; // status should be 'verified', 'cancelled', or 'pending'
+      console.log(req.body);
+      console.log(req.params);
+      const { transactionId } = req.params; // Read transactionId from URL params
+      const { status } = req.body; // status should be 'verified', 'cancelled', or 'pending'
       
       if (!['pending', 'verified', 'cancelled'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status value' });
@@ -112,11 +115,13 @@ export const getTransactions = async (req, res) => {
   
       if (!updatedTransaction) {
         return res.status(404).json({ message: 'Transaction not found' });
+        console.log('transaction not found but why'); 
       }
   
       res.status(200).json(updatedTransaction);
     } catch (error) {
       console.error('Error updating transaction status:', error);
+      console.log('error is', error);
       res.status(500).json({ message: 'Server error' });
     }
   };

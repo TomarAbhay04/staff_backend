@@ -15,7 +15,7 @@ const MemberSchema = new mongoose.Schema({
   DonationAmount: { type: Number, default: 0 }, // Added default value
 
   RasidNo: { type: String },
-  FamilyMembers: { type: String },
+  FamilyMembers: { type: Number, default: 0 }, // Added default value
   Occupation: { type: String },
   Gauwansh: { type: String },
 

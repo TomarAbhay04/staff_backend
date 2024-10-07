@@ -256,15 +256,115 @@ export const getTotalSurveysAndData = async (req, res) => {
 };
 
 
+// export const getEmployeeSurveysAndData = async (req, res) => {
+//   const { employeeId } = req.params;
+//   console.log(`Received employeeId: ${employeeId}`);
+
+//   try {
+//     // Convert employeeId string to ObjectId
+//     const employeeObjectId = new mongoose.Types.ObjectId(employeeId);
+
+//     // Check if employee exists based on the employeeId
+//     const member = await Member.findOne({ employeeId: employeeObjectId });
+//     if (!member) {
+//       console.log('No employee found with this employeeId');
+//       return res.status(404).json({ message: "No employee found with this ID" });
+//     }
+
+//     console.log('Employee found:', member);
+
+//     // Perform aggregation to calculate totals
+//     const result = await Member.aggregate([
+//       { $match: { employeeId: employeeObjectId } },
+//       {
+//         $group: {
+//           _id: null,
+
+//           // Sum FamilyMembers, ignoring non-numeric values
+//           totalFamilyMembers: {
+//             $sum: {
+//               $cond: {
+//                 if: {
+//                   $regexMatch: { input: "$FamilyMembers", regex: /^[0-9]+$/ } // Only match numeric values
+//                 },
+//                 then: { $toInt: "$FamilyMembers" }, // Convert to integer if numeric
+//                 else: 0 // Ignore non-numeric values
+//               }
+//             }
+//           },
+
+//           totalMahilaSamuh: {
+//             $sum: { $ifNull: ["$mahilaSamuhCount", 0] }
+//           },
+
+//           totalSurveys: { $sum: 1 },
+
+//           uniqueVillageNames: {
+//             $addToSet: {
+//               $cond: {
+//                 if: {
+//                   $and: [
+//                     { $ne: ["$VillageName", null] }, 
+//                     { $ne: ["$VillageName", ""] }
+//                   ]
+//                 },
+//                 then: "$VillageName",
+//                 else: null
+//               }
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           totalFamilyMembers: 1,
+//           totalMahilaSamuh: 1,
+//           totalSurveys: 1,
+//           totalUniqueVillages: { 
+//             $size: { 
+//               $filter: { 
+//                 input: "$uniqueVillageNames", 
+//                 as: "village", 
+//                 cond: { $ne: ["$$village", null] } 
+//               } 
+//             } 
+//           }
+//         }
+//       }
+//     ]);
+
+//     if (result.length === 0) {
+//       console.log('No survey data found for this employee');
+//       return res.status(404).json({ message: "No data found for this employee" });
+//     }
+
+//     const { totalFamilyMembers, totalMahilaSamuh, totalSurveys, totalUniqueVillages } = result[0];
+
+//     console.log('Total Family Members:', totalFamilyMembers);
+//     console.log('Total Mahila Samuh:', totalMahilaSamuh);
+//     console.log('Total Surveys:', totalSurveys);
+//     console.log('Total Unique Villages:', totalUniqueVillages);
+
+//     // Send response with calculated data
+//     res.status(200).json({
+//       totalFamilyMembers,
+//       totalMahilaSamuh,
+//       totalSurveys,
+//       totalUniqueVillages
+//     });
+//   } catch (error) {
+//     console.error("Error calculating employee totals:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
 export const getEmployeeSurveysAndData = async (req, res) => {
-  const { employeeId } = req.params; // Get employeeId from request parameters
-  console.log(`Received employeeId: ${employeeId}`); // Log employeeId for debugging
+  const { employeeId } = req.params;
+  console.log(`Received employeeId: ${employeeId}`);
 
   try {
     // Convert employeeId string to ObjectId
     const employeeObjectId = new mongoose.Types.ObjectId(employeeId);
-    
-
 
     // Check if employee exists based on the employeeId
     const member = await Member.findOne({ employeeId: employeeObjectId });
@@ -273,34 +373,46 @@ export const getEmployeeSurveysAndData = async (req, res) => {
       return res.status(404).json({ message: "No employee found with this ID" });
     }
 
-    console.log('Employee found:', member); // Log the employee data for debugging
+    console.log('Employee found:', member);
 
-    // Perform aggregation to calculate totals
+    // Perform aggregation to calculate totals, handling both string and number types
     const result = await Member.aggregate([
-      { $match: { employeeId: employeeObjectId } }, // Match by employeeId as ObjectId
+      { $match: { employeeId: employeeObjectId } },
       {
         $group: {
           _id: null,
-          
+
+          // Sum FamilyMembers, handling both numeric strings and numbers
           totalFamilyMembers: {
             $sum: {
               $cond: {
-                if: { $gt: [{ $toInt: { $ifNull: ["$FamilyMembers", "0"] } }, 0] }, // Convert FamilyMembers to integer or default to 0
-                then: { $toInt: "$FamilyMembers" },
-                else: 0
+                if: {
+                  $or: [
+                    { $regexMatch: { input: { $toString: "$FamilyMembers" }, regex: /^[0-9]+$/ } }, // Check if it's a numeric string
+                    { $isNumber: "$FamilyMembers" } // Check if it's already a number
+                  ]
+                },
+                then: { $toInt: { $toString: "$FamilyMembers" } }, // Convert to int (handles both number and numeric string)
+                else: 0 // Ignore non-numeric values
               }
             }
           },
-          totalMahilaSamuh: {
-            $sum: { $ifNull: ["$mahilaSamuhCount", 0] } // Sum of mahilaSamuhCount, default to 0 if null
-          },
-          totalSurveys: { $sum: 1 }, // Total count of documents (surveys)
 
+          totalMahilaSamuh: {
+            $sum: { $ifNull: ["$mahilaSamuhCount", 0] }
+          },
+
+          totalSurveys: { $sum: 1 },
 
           uniqueVillageNames: {
             $addToSet: {
               $cond: {
-                if: { $and: [{ $ne: ["$VillageName", null] }, { $ne: ["$VillageName", ""] }] }, // Exclude null or empty village names
+                if: {
+                  $and: [
+                    { $ne: ["$VillageName", null] },
+                    { $ne: ["$VillageName", ""] }
+                  ]
+                },
                 then: "$VillageName",
                 else: null
               }
@@ -308,18 +420,26 @@ export const getEmployeeSurveysAndData = async (req, res) => {
           }
         }
       },
-      { 
+      {
         $project: {
           totalFamilyMembers: 1,
           totalMahilaSamuh: 1,
           totalSurveys: 1,
-          totalUniqueVillages: { $size: { $filter: { input: "$uniqueVillageNames", as: "village", cond: { $ne: ["$$village", null] } } } }
+          totalUniqueVillages: {
+            $size: {
+              $filter: {
+                input: "$uniqueVillageNames",
+                as: "village",
+                cond: { $ne: ["$$village", null] }
+              }
+            }
+          }
         }
       }
     ]);
 
     if (result.length === 0) {
-      console.log('No survey data found for this employee'); // Log if no data is found
+      console.log('No survey data found for this employee');
       return res.status(404).json({ message: "No data found for this employee" });
     }
 
@@ -342,6 +462,10 @@ export const getEmployeeSurveysAndData = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
 
 export const getMemberDataForEmployee = async (req, res) => {
   try {
