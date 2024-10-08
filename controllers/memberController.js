@@ -495,16 +495,18 @@ export const updateMember = async (req, res) => {
     FourWheeler,
     EducationRequired,
     searchingJob,
-    MahilaSamuh,
+    mahilaSamuhCount,    // Renamed for consistency with frontend
+    // MahilaSamuh,
     LoanRunning,
     NeedLoan,
     OtherDetails,
-    DonationDetails,
-    // OtherDonation,
+    DonationAmount,      // Renamed for consistency with frontend
+    RasidNo,             // Renamed for consistency with frontend
     Remarks
   } = req.body; // Extract the fields to update from the request body
-
+  console.log('Received request to update member:', req.body);
   try {
+    console.log('Received request to update member:', req.body);
     // Find the member by ID and update the specified fields
     const updatedMember = await Member.findByIdAndUpdate(
       id,
@@ -513,16 +515,20 @@ export const updateMember = async (req, res) => {
         Occupation,
         Gauwansh,
         Tractor,
+        tractorCount: Tractor === "yes" ? TractorCount : 0,  // Update count only if "yes"
         TwoWheeler,
+        twoWheelerCount: TwoWheeler === "yes" ? TwoWheelerCount : 0,
         FourWheeler,
+        fourWheelerCount: FourWheeler === "yes" ? FourWheelerCount : 0,
         EducationRequired,
         searchingJob,
-        MahilaSamuh,
+        // MahilaSamuh,
+        mahilaSamuhCount,    // Renamed for consistency with frontend
         LoanRunning,
         NeedLoan,
         OtherDetails,
-        DonationDetails,
-        // OtherDonation,
+        DonationAmount,      // Renamed for consistency with frontend
+        RasidNo,             // Renamed for consistency with frontend
         Remarks
       },
       { new: true, runValidators: true } // Return the updated document and run validation
@@ -559,7 +565,3 @@ export const deleteMember = async (req, res) => {
     res.status(500).json({ message: 'Server error, could not delete member.', error: error.message });
   }
 };
-
-
-
-//  ahmedabad , ghad ke pura, shantipuram, 2342, sdfs, ress, we, sdf, sdfsdf, sfsd, 

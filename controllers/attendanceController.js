@@ -4,45 +4,6 @@ import cron from 'node-cron';
 import mongoose from 'mongoose';
 
 // Upload attendance with pending status
-// export const uploadAttendance = async (req, res) => {
-//   try {
-//     const { employeeId, date, period, time, lat, lng, address } = req.body;
-//     console.log('Received data:', { employeeId, date, period, time, lat, lng, address });
-
-//     const employee = await Employee.findById(employeeId);
-//     if (!employee) {
-//       console.error('Employee not found:', employeeId);
-//       return res.status(404).json({ error: 'Employee not found' });
-//     }
-
-//     // Check for existing attendance for the given employee, date, and period
-//     const existingAttendance = await Attendance.findOne({ employeeId, date, period });
-//     if (existingAttendance) {
-//       console.error('Attendance already exists for this period:', { employeeId, date, period });
-//       return res.status(400).json({ error: `Attendance for ${period} period is already uploaded for today` });
-//     }
-
-//     const newAttendance = new Attendance({
-//       employeeId,
-//       date,
-//       period,
-//       time,
-//       lat,
-//       lng,
-//       address,
-//       status: 'Pending',
-//     });
-
-//     await newAttendance.save();
-//     console.log('Attendance uploaded successfully:', newAttendance);
-//     return res.status(200).json({ message: 'Attendance uploaded successfully' });
-//   } catch (err) {
-//     console.error('Error uploading attendance:', err);
-//     return res.status(500).json({ error: 'Error uploading attendance' });
-//   }
-// };
-
-// Upload attendance with pending status
 export const uploadAttendance = async (req, res) => {
   try {
     const { employeeId, date, period, time, lat, lng, address } = req.body;
@@ -95,6 +56,12 @@ export const uploadAttendance = async (req, res) => {
 
     await newAttendance.save();
     console.log('Attendance uploaded successfully:', newAttendance);
+
+    // Check if this is the 4th attendance of the day; if so, evaluate status immediately
+    const attendanceCount = await Attendance.countDocuments({ employeeId, date });
+    if (attendanceCount >= 4) {
+      await evaluateAttendanceStatusForEmployee(employeeId, date);
+    }
 
     return res.status(200).json({ message: 'Attendance uploaded successfully' });
   } catch (err) {
