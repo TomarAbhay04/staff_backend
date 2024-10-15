@@ -7,7 +7,8 @@ import {
     verifyEmployeeEmail,
     getEmployeeByEmail,
     updateEmployee,
-    deleteEmployee
+    deleteEmployee,
+    loginEmployee,
 } from '../controllers/EmployeeController.js';
 
 const router = express.Router();
@@ -18,6 +19,7 @@ router.delete('/:id', deleteEmployee);
 router.put('/:id', upload.single('photo'), updateEmployee);
 router.get('/', getAllEmployees);
 router.get('/:id', getEmployeeById);
+router.post('/login', loginEmployee);
 router.get('/verify/:email', verifyEmployeeEmail);
 router.get('/email/:email', getEmployeeByEmail);
 

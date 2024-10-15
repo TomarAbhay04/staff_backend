@@ -1,29 +1,9 @@
 import { Employee } from '../models/Employee.js';
-// import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 
-// Add new employee
-// export const addEmployee = async (req, res) => {
-//     try {
-//         const { personalDetails, companyDetails, financialDetails } = JSON.parse(req.body.data);
-
-//         // If a photo is uploaded, update the photo field
-//         if (req.file) {
-//             personalDetails.photo = req.file.path; // Store the path of the uploaded photo
-//         }
-
-//         const employee = new Employee({
-//             personalDetails,
-//             companyDetails,
-//             financialDetails
-//         });
-
-//         await employee.save();
-//         res.status(201).json({ message: 'Employee added successfully', employee });
-//     } catch (error) {
-//         console.error('Error adding employee:', error);
-//         res.status(400).json({ message: 'Error adding employee', error: error.message });
-//     }
-// };
+const Admin_Emails = ["mauryapravesh67@gmail.com", "gaumms@gmail.com", "hemangisharma316@gmail.com"];
+const Admin_Default_Password = "gaummsadmin";
+const Staff_Default_Password = "gaumms";
 
 export const addEmployee = async (req, res) => {
     try {
@@ -50,6 +30,51 @@ export const addEmployee = async (req, res) => {
         res.status(400).json({ message: 'Error adding employee', error: error.message });
     }
 };
+
+
+// Login Employee Controller (Improved)
+export const loginEmployee = async (req, res) => {
+    try {
+        const { email, password, role } = req.body;
+
+        // Admin Login Logic
+        if (role === 'admin' && Admin_Emails.includes(email)) {
+            if (password === Admin_Default_Password) {
+                return res.status(200).json({
+                    message: 'Login successful as admin',
+                    user: { email, role: 'admin', name: 'Admin User' } // Example admin data
+                });
+            } else {
+                return res.status(401).json({ message: 'Invalid password for admin' });
+            }
+        }
+
+        // Staff Login Logic
+        const employee = await Employee.findOne({ 'personalDetails.email': email });
+
+        if (!employee) {
+            return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        if (role === 'staff') {
+            if (password === Staff_Default_Password) {
+                return res.status(200).json({ 
+                    message: 'Login successful as staff', 
+                    employee 
+                });
+            } else {
+                return res.status(401).json({ message: 'Invalid password for staff' });
+            }
+        }
+
+        // If role doesn't match or invalid credentials provided
+        res.status(403).json({ message: 'Unauthorized role or invalid credentials' });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ message: 'Error during login', error: error.message });
+    }
+};
+
 
 // Get all employees
 export const getAllEmployees = async (req, res) => {
@@ -85,13 +110,6 @@ export const verifyEmployeeEmail = async (req, res) => {
         if (!employee) {
           return res.status(404).json({ message: 'Employee not found' });
         }
-    
-        // Generate JWT token
-        // const token = jwt.sign(
-        //   { id: employee._id, email: employee.personalDetails.email, role: employee.role },
-        //   process.env.JWT_SECRET,
-        //   { expiresIn: '1h' } // Token expires in 1 hour
-        // );
     
         res.status(200).json({ message: 'Login successful', employee });
       } catch (error) {
