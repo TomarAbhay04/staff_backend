@@ -128,7 +128,12 @@ export const getMembers = async (req, res) => {
     // const members = await Member.find();
     const members = await Member.find()
     // .sort({ createdAt: -1 });;
-    .sort({ createdAt: -1, _id: 1 });
+    .sort({ createdAt: -1, _id: 1 })
+    .populate({
+      path: 'employeeId',
+      select: 'personalDetails.phoneNumber personalDetails.name companyDetails.employeeId',
+    });
+    ;
     res.status(200).json(members);
   } catch (error) {
     console.error('Error fetching members:', error);
@@ -463,7 +468,116 @@ export const getEmployeeSurveysAndData = async (req, res) => {
   }
 };
 
+// export const getEmployeeSurveysAndData = async (req, res) => {
+//   const { employeeId } = req.params;
+//   console.log(`Received employeeId: ${employeeId}`);
 
+//   try {
+//     // Convert employeeId string to ObjectId
+//     const employeeObjectId = mongoose.Types.ObjectId.isValid(employeeId)
+//       ? new mongoose.Types.ObjectId(employeeId)
+//       : null;
+
+//     if (!employeeObjectId) {
+//       return res.status(400).json({ message: "Invalid employee ID format" });
+//     }
+
+//     // Check if employee exists based on the employeeId
+//     const member = await Member.findById(employeeObjectId); // Use _id instead of employeeId if it's a unique identifier
+//     if (!member) {
+//       console.log('No employee found with this employeeId');
+//       return res.status(404).json({ message: "No employee found with this ID" });
+//     }
+
+//     console.log('Employee found:', member);
+
+//     // Perform aggregation to calculate totals, handling both string and number types
+//     const result = await Member.aggregate([
+//       { $match: { _id: employeeObjectId } }, // Use _id to match the employee
+//       {
+//         $group: {
+//           _id: null,
+
+//           // Sum FamilyMembers, handling both numeric strings and numbers
+//           totalFamilyMembers: {
+//             $sum: {
+//               $cond: {
+//                 if: {
+//                   $or: [
+//                     { $regexMatch: { input: { $toString: "$FamilyMembers" }, regex: /^[0-9]+$/ } }, // Check if it's a numeric string
+//                     { $isNumber: "$FamilyMembers" } // Check if it's already a number
+//                   ]
+//                 },
+//                 then: { $toInt: { $toString: "$FamilyMembers" } }, // Convert to int (handles both number and numeric string)
+//                 else: 0 // Ignore non-numeric values
+//               }
+//             }
+//           },
+
+//           totalMahilaSamuh: {
+//             $sum: { $ifNull: ["$mahilaSamuhCount", 0] }
+//           },
+
+//           totalSurveys: { $sum: 1 },
+
+//           uniqueVillageNames: {
+//             $addToSet: {
+//               $cond: {
+//                 if: {
+//                   $and: [
+//                     { $ne: ["$VillageName", null] },
+//                     { $ne: ["$VillageName", ""] }
+//                   ]
+//                 },
+//                 then: "$VillageName",
+//                 else: null
+//               }
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           totalFamilyMembers: 1,
+//           totalMahilaSamuh: 1,
+//           totalSurveys: 1,
+//           totalUniqueVillages: {
+//             $size: {
+//               $filter: {
+//                 input: "$uniqueVillageNames",
+//                 as: "village",
+//                 cond: { $ne: ["$$village", null] }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     ]);
+
+//     if (result.length === 0) {
+//       console.log('No survey data found for this employee');
+//       return res.status(404).json({ message: "No data found for this employee" });
+//     }
+
+//     const { totalFamilyMembers, totalMahilaSamuh, totalSurveys, totalUniqueVillages } = result[0];
+
+//     console.log('Total Family Members:', totalFamilyMembers);
+//     console.log('Total Mahila Samuh:', totalMahilaSamuh);
+//     console.log('Total Surveys:', totalSurveys);
+//     console.log('Total Unique Villages:', totalUniqueVillages);
+
+//     // Send response with calculated data
+//     res.status(200).json({
+//       totalFamilyMembers,
+//       totalMahilaSamuh,
+//       totalSurveys,
+//       totalUniqueVillages
+//     });
+//   } catch (error) {
+//     console.error("Error calculating employee totals:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
 
 
 
